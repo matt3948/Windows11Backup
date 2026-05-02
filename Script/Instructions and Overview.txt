@@ -1,0 +1,58 @@
+PowerShell script that handles all of this. It includes:
+Interactive prompts for destination (USB or custom folder)
+User file transfer (Documents, Downloads, Pictures, Videos, Music, Desktop)
+AppData (Roaming, Local, LocalLow — with size warnings)
+Installed programs list (exported as a readable text file)
+Browser data (Chrome, Firefox, Edge profiles)
+Additional items like SSH keys, Windows credentials hint, scheduled tasks, Wi-Fi profiles, and environment variables
+Progress tracking and a final summary log
+
+###Wimdows
+How to run it
+Right-click PC-Transfer.ps1 → Run with PowerShell, or from an elevated prompt:
+> powershell -ExecutionPolicy Bypass -File "PC-Transfer.ps1"
+Running as Administrator is recommended — it's required for Wi-Fi passwords and some protected AppData paths.
+What it asks you interactively
+
+USB drive (lists all removable drives with free space) or a custom folder path
+Which AppData sections to copy (Roaming / Local / LocalLow) — with sizes shown upfront so you can decide
+
+What it exports automatically
+
+All standard user folders (Desktop, Documents, Downloads, Pictures, Videos, Music, Favorites)
+Browser profiles for Chrome, Edge, Firefox, Brave, Vivaldi, and Opera
+Installed programs as both a readable .txt and a .csv
+Wi-Fi profiles including passwords (plain text, handle with care)
+SSH keys from ~/.ssh
+User and system environment variables
+Non-Microsoft scheduled tasks as XML
+A system info snapshot (hardware, OS, drives)
+Windows OEM product key if embedded in firmware
+
+A few things to know before wiping your old PC
+
+Windows Credentials (saved passwords in browsers, mapped drives, etc.) can't be scripted — open Credential Manager and photograph or note anything important
+Licenses for paid software (Adobe, Office, etc.) should be deactivated on the old machine before reinstalling
+Browser profiles copied this way work best when placed back in the exact same AppData path on the new machine before launching the browser for the first time
+
+
+###Linux
+How to run it
+> bashchmod +x pc-transfer.sh
+> sudo ./pc-transfer.sh        # sudo recommended for Wi-Fi/system exports
+
+
+Key differences from the Windows version
+The Linux script uses rsync instead of robocopy, which gives you better control over exclusions and handles symlinks correctly. It detects USB drives via lsblk/findmnt rather than WMI, and respects XDG user directories — so if your Downloads folder is somewhere non-standard, it'll find it.
+Multi-distro package manager support — it auto-detects and exports from whichever you have: APT (Debian/Ubuntu/Mint), DNF/YUM (Fedora/RHEL), Pacman (Arch/Manjaro), or Zypper (openSUSE). It also exports pip, npm, gem, and cargo package lists separately.
+What it copies that the Windows version doesn't need to
+
+~/.config — most app settings live here on Linux (interactive, you choose)
+Shell configs (.bashrc, .zshrc, oh-my-zsh, etc.)
+GPG keys (public and secret, with a clear warning)
+GNOME Keyring (saved passwords)
+/etc/hosts and /etc/fstab for reference
+NetworkManager Wi-Fi connections (stored as files in /etc/NetworkManager/system-connections/)
+User-installed fonts from ~/.local/share/fonts
+
+Restore notes included — the script writes a RESTORE-NOTES.txt to the destination with the exact commands to restore packages, SSH/GPG keys, Wi-Fi profiles, browser data, and fonts on the new machine. The fstab note is particularly important — drive UUIDs will differ on new hardware and need updating with blkid.
